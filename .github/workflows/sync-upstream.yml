@@ -2,26 +2,28 @@ name: Sync Upstream
 
 on:
   schedule:
-    - cron: '0 4 * * *'     # 每天北京时间中午12点左右（UTC+8），可自行修改
-  workflow_dispatch:        # 支持手动触发
+    - cron: '0 16 * * *'      # 每天 UTC 4点（北京时间中午12点）
+  workflow_dispatch:         # 支持手动触发
 
 jobs:
   sync_latest_from_upstream:
     name: Sync latest commits from upstream repo
     runs-on: ubuntu-latest
-    if: ${{ github.event.repository.fork }}   # 仅在 fork 仓库运行
+    if: ${{ github.event.repository.fork }}
 
     steps:
       - name: Checkout target repo
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0     # 拉取完整历史
+          fetch-depth: 0
+          # persist-credentials: false   # 如果上游是私有仓库才需要
 
       - name: Sync upstream changes
         id: sync
-        uses: aormsby/Fork-Sync-With-Upstream-action@v3.4
+        uses: aormsby/Fork-Sync-With-Upstream-action@v3.4.1   # 使用较新版本
         with:
-          upstream_repo: "xbtlin/ai-berkshire"   # 例如：torvalds/linux
-          upstream_branch: "main"                   # 上游分支，通常是 main 或 master
-          target_branch: "main"                     # 你 fork 中的目标分支
+          target_sync_branch: main                  # ← 改成你 fork 的主分支（main 或 master）
+          upstream_sync_repo: "xbtlin/ai-berkshire"     # ← 例如：torvalds/linux 或 microsoft/vscode
+          upstream_sync_branch: main                # ← 上游的主分支
           target_repo_token: ${{ secrets.GITHUB_TOKEN }}
+          # test_mode: true                         # 测试时打开，正式运行时注释掉或设为 false
